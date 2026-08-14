@@ -2,7 +2,25 @@ import os
 import sys
 import subprocess
 
-# Ensure spacy english model is available
+# 1. Hotpatch huggingface_hub.HfFolder to prevent Gradio import crashes on newer hub versions
+try:
+    import huggingface_hub
+    if not hasattr(huggingface_hub, "HfFolder"):
+        class HfFolder:
+            @classmethod
+            def get_token(cls):
+                return os.environ.get("HF_TOKEN") or None
+            @classmethod
+            def save_token(cls, token):
+                pass
+            @classmethod
+            def delete_token(cls):
+                pass
+        huggingface_hub.HfFolder = HfFolder
+except Exception as e:
+    print(f"HfFolder patch notice: {e}")
+
+# 2. Ensure spacy english model is available
 try:
     import spacy
     try:
@@ -12,6 +30,7 @@ try:
 except Exception as e:
     print(f"Notice during spacy setup: {e}")
 
+# 3. Import Gradio and FastAPI backend
 import gradio as gr
 from backend.main import app as fastapi_app
 
