@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-# Ensure spacy model is loaded or downloaded
+# Ensure spacy english model is available
 try:
     import spacy
     try:
@@ -12,6 +12,7 @@ try:
 except Exception as e:
     print(f"Notice during spacy setup: {e}")
 
+import uvicorn
 import gradio as gr
 from backend.main import app as fastapi_app
 
@@ -23,7 +24,6 @@ def check_health():
         "architecture": "4 Non-LLM Multi-Signal Pipeline + Regularized Logistic Regression"
     }
 
-# Build Gradio UI
 with gr.Blocks(title="Veritas AI Forensics API") as demo:
     gr.Markdown("# 🔬 Veritas AI — Multi-Signal Admissions Forensics API")
     gr.Markdown("FastAPI backend gateway is active. REST API endpoints `/api/analyze` and `/docs` are operational.")
@@ -32,8 +32,9 @@ with gr.Blocks(title="Veritas AI Forensics API") as demo:
         out = gr.JSON()
     btn.click(fn=check_health, inputs=[], outputs=out)
 
-# Mount FastAPI app onto Gradio
+# Mount Gradio app onto FastAPI
 app = gr.mount_gradio_app(fastapi_app, demo, path="/")
 
-# Run demo at top level so Hugging Face Spaces starts listening immediately
-demo.launch(server_name="0.0.0.0", server_port=7860, app=app)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 7860))
+    uvicorn.run(app, host="0.0.0.0", port=port)
