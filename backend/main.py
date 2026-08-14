@@ -23,11 +23,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend development & cloud deployments
+# Enable robust CORS for Vercel, localhost, and all cloud origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+",
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
