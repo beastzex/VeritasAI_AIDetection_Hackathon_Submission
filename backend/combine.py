@@ -1,7 +1,7 @@
 import os
 import joblib
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 
 class SignalCombiner:
     def __init__(self, model_path: str = "backend/model_weights/combiner_model.pkl"):
@@ -39,19 +39,44 @@ class SignalCombiner:
 
     def combine_sentence(
         self,
-        sig_a_score: float,
-        sig_a_density: float,
-        sig_b_score: float,
-        sig_c_len_var: float,
-        sig_c_ttr: float,
-        sig_c_readability: float,
-        sig_c_score: float,
-        sig_d_prob: float
+        sig_data_or_a_score: Union[Dict[str, Any], float],
+        sig_a_density: float = 0.0,
+        sig_b_score: float = 0.5,
+        sig_c_len_var: float = 20.0,
+        sig_c_ttr: float = 0.7,
+        sig_c_readability: float = 60.0,
+        sig_c_score: float = 0.5,
+        sig_d_prob: float = 0.5
     ) -> Dict[str, Any]:
         """
         Combines 4 signals for a single sentence and returns calibrated AI probability
-        and relative signal contributions.
+        and relative signal contributions. Accepts either a dictionary or positional arguments.
         """
+        if isinstance(sig_data_or_a_score, dict):
+            d = sig_data_or_a_score
+            sig_a_score = float(d.get("sig_a_vocab_score", 0.0))
+            sig_a_density = float(d.get("sig_a_vocab_density", 0.0))
+            sig_b_score = float(d.get("sig_b_narrative_variance_score", 0.5))
+            sig_c_len_var = float(d.get("sig_c_length_variance", 20.0))
+            sig_c_ttr = float(d.get("sig_c_ttr", 0.7))
+            sig_c_readability = float(d.get("sig_c_readability", 60.0))
+            sig_c_score = float(d.get("sig_c_heuristic_score", 0.5))
+            sig_d_prob = float(d.get("sig_d_deberta_prob", 0.5))
+            sentence_index = d.get("sentence_index", 0)
+            text = d.get("text", "")
+            vocab_matches = d.get("sig_a_vocab_matches", [])
+            ttr = d.get("sig_c_ttr", 0.7)
+            passive = d.get("sig_c_passive_voice", False)
+            trans_count = d.get("sig_c_transition_count", 0)
+        else:
+            sig_a_score = float(sig_data_or_a_score)
+            sentence_index = 0
+            text = ""
+            vocab_matches = []
+            ttr = sig_c_ttr
+            passive = False
+            trans_count = 0
+
         feats = np.array([
             sig_a_score,
             sig_a_density,
@@ -66,7 +91,7 @@ class SignalCombiner:
         if self.model is not None:
             ai_prob = float(self.model.predict_proba(feats.reshape(1, -1))[0, 1])
         else:
-            # Use exact logistic regression formulation
+            # Exact logistic regression formulation
             coef_list = [
                 self.coefficients.get("sig_a_vocab_score", 2.2),
                 self.coefficients.get("sig_a_vocab_density", 1.4),
@@ -102,8 +127,29 @@ class SignalCombiner:
         }
         
         return {
+            "sentence_index": sentence_index,
+            "text": text,
             "ai_probability": ai_prob,
             "band": band,
             "band_label": band_label,
-            "contributions": contributions
+            "contributions": contributions,
+            "signals": {
+                "signal_a": {
+                    "matched_count": len(vocab_matches),
+                    "matched_phrases": vocab_matches,
+                    "score": sig_a_score
+                },
+                "signal_b": {
+                    "narrative_variance_score": sig_b_score
+                },
+                "signal_c": {
+                    "ttr": ttr,
+                    "passive_voice": passive,
+                    "transition_count": trans_count,
+                    "score": sig_c_score
+                },
+                "signal_d": {
+                    "prob": sig_d_prob
+                }
+            }
         }
