@@ -9,6 +9,24 @@ export default function Hero({ onExploreClick, onTestClick }) {
 
   const currentVector = selectedTrajectory === 'human' ? humanSamples : aiSamples;
 
+  const handleLaunchStudio = () => {
+    if (typeof onTestClick === 'function') {
+      onTestClick();
+    } else {
+      const el = document.getElementById('workbench') || document.getElementById('studio');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleResearchClick = () => {
+    if (typeof onExploreClick === 'function') {
+      onExploreClick();
+    } else {
+      const el = document.getElementById('architecture') || document.getElementById('research');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="hero" className="bg-white dark:bg-[#000000] text-[#000000] dark:text-white py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-b border-[#ebebeb] dark:border-[#27272a] relative overflow-hidden transition-colors">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
@@ -29,7 +47,7 @@ export default function Hero({ onExploreClick, onTestClick }) {
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
             <button
-              onClick={onTestClick}
+              onClick={handleLaunchStudio}
               className="btn-primary text-xs sm:text-[13px] !py-3 !px-5 sm:!px-6 hover:bg-[#fc4c02] dark:hover:bg-[#fc4c02] dark:hover:text-white transition-colors justify-center"
             >
               <span>LAUNCH INFERENCE STUDIO</span>
@@ -37,7 +55,7 @@ export default function Hero({ onExploreClick, onTestClick }) {
             </button>
 
             <button
-              onClick={onExploreClick}
+              onClick={handleResearchClick}
               className="btn-outline-tg text-xs sm:text-[13px] !py-3 !px-5 hover:border-[#fc4c02] justify-center"
             >
               <span>RESEARCH & PROOFS</span>
@@ -47,13 +65,13 @@ export default function Hero({ onExploreClick, onTestClick }) {
           {/* Quick Telemetry Chips */}
           <div className="pt-4 grid grid-cols-3 gap-3 sm:gap-6 font-mono text-[11px] sm:text-[12px] text-[#959494] border-t border-[#ebebeb] dark:border-[#27272a]">
             <div>
-              ACCURACY: <span className="text-[#000000] dark:text-white font-bold block sm:inline">99.0%</span>
+              ACCURACY: <span className="text-[#000000] dark:text-white font-bold block sm:inline">98.4%</span>
             </div>
             <div>
               ESL SPECIFICITY: <span className="text-[#fc4c02] font-bold block sm:inline">96.7%</span>
             </div>
             <div>
-              ROC-AUC: <span className="text-[#000000] dark:text-white font-bold block sm:inline">0.9996</span>
+              ROC-AUC: <span className="text-[#000000] dark:text-white font-bold block sm:inline">0.9995</span>
             </div>
           </div>
         </div>
@@ -73,7 +91,7 @@ export default function Hero({ onExploreClick, onTestClick }) {
               </div>
 
               {/* Segmented Control */}
-              <div className="flex items-center gap-1 bg-[#f9f9f9] dark:bg-[#18181b] p-0.5 rounded-[4px] font-mono text-[10px] border border-[#ebebeb] dark:border-[#27272a] flex-shrink-0">
+              <div className="flex items-center bg-[#f4f4f5] dark:bg-[#18181b] p-0.5 rounded-[4px] border border-[#ebebeb] dark:border-[#27272a] font-mono text-[10px] sm:text-[11px]">
                 <button
                   onClick={() => setSelectedTrajectory('human')}
                   className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-[3px] transition-all ${

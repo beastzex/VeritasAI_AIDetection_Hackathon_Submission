@@ -2,21 +2,26 @@ import React, { useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import ToggleTheme from './ToggleTheme';
 
-export default function Navbar({ activeSection, setActiveSection }) {
+export default function Navbar({ activeSection, setActiveSection, theme, setTheme }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { id: 'overview', label: 'ARCHITECTURE' },
-    { id: 'studio', label: 'INFERENCE STUDIO' },
-    { id: 'research', label: 'RESEARCH & PROOFS' },
-    { id: 'audit', label: 'ESL BENCHMARK' },
+    { id: 'overview', label: 'ARCHITECTURE', target: 'features' },
+    { id: 'studio', label: 'INFERENCE STUDIO', target: 'workbench' },
+    { id: 'research', label: 'RESEARCH & PROOFS', target: 'architecture' },
+    { id: 'audit', label: 'ESL BENCHMARK', target: 'evaluation' },
   ];
 
-  const scrollTo = (id) => {
-    setActiveSection(id);
+  const scrollTo = (targetId, id) => {
+    if (typeof setActiveSection === 'function') {
+      setActiveSection(id || targetId);
+    }
     setMobileMenuOpen(false);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+
+    const el = document.getElementById(targetId) || document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -24,7 +29,7 @@ export default function Navbar({ activeSection, setActiveSection }) {
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
         {/* Brand with Orange Accent Badge */}
         <div 
-          onClick={() => scrollTo('hero')}
+          onClick={() => scrollTo('hero', 'hero')}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
           <div className="w-6 h-6 rounded-[3px] bg-[#fc4c02] text-white flex items-center justify-center font-mono text-[11px] font-bold shadow-sm">
@@ -45,7 +50,7 @@ export default function Navbar({ activeSection, setActiveSection }) {
             return (
               <button
                 key={item.id}
-                onClick={() => scrollTo(item.id)}
+                onClick={() => scrollTo(item.target, item.id)}
                 className={`transition-colors hover:text-black dark:hover:text-white ${
                   isActive ? 'text-black dark:text-white font-bold' : ''
                 }`}
@@ -58,10 +63,10 @@ export default function Navbar({ activeSection, setActiveSection }) {
 
         {/* Action Controls: Lightswind Swipe-Down Theme Toggle, CTA, & Mobile Menu Button */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <ToggleTheme animationType="swipe-down" duration={500} />
+          <ToggleTheme animationType="swipe-down" duration={500} theme={theme} setTheme={setTheme} />
 
           <button
-            onClick={() => scrollTo('studio')}
+            onClick={() => scrollTo('workbench', 'studio')}
             className="hidden sm:inline-flex btn-secondary-mint text-[11px] sm:text-[12px] !py-2 !px-3 sm:!px-4 hover:bg-[#fc4c02] hover:text-white transition-colors"
           >
             <span>TRY INFERENCE</span>
@@ -86,7 +91,7 @@ export default function Navbar({ activeSection, setActiveSection }) {
             {navLinks.map((item) => (
               <button
                 key={item.id}
-                onClick={() => scrollTo(item.id)}
+                onClick={() => scrollTo(item.target, item.id)}
                 className="text-left py-2 text-[#959494] hover:text-black dark:hover:text-white font-semibold transition-colors"
               >
                 {item.label}
@@ -95,7 +100,7 @@ export default function Navbar({ activeSection, setActiveSection }) {
           </div>
           <div className="pt-2 border-t border-[#ebebeb] dark:border-[#27272a]">
             <button
-              onClick={() => scrollTo('studio')}
+              onClick={() => scrollTo('workbench', 'studio')}
               className="w-full btn-secondary-mint text-xs py-2.5 flex items-center justify-center gap-2"
             >
               <span>LAUNCH INFERENCE STUDIO</span>
