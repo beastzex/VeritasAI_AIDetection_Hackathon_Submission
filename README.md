@@ -1,7 +1,7 @@
 ---
 title: Veritas AI Backend
 emoji: 🔬
-colorFrom: orange
+colorFrom: red
 colorTo: gray
 sdk: gradio
 sdk_version: 4.20.0
