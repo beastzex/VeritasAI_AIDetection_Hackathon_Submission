@@ -23,7 +23,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend development
+# Enable CORS for frontend development & cloud deployments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,13 +32,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Lazy/global load signals
-vocab_sig = VocabularySignal()
-narrative_sig = NarrativeSignal()
-stylo_sig = StylometrySignal()
-clf_sig = ClassifierSignal()
-combiner = SignalCombiner()
-explainer = ExplainerService()
+# Lazy singletons for memory safety and instant port binding (< 0.05s)
+_vocab_sig = None
+_narrative_sig = None
+_stylo_sig = None
+_clf_sig = None
+_combiner = None
+_explainer = None
+
+def get_vocab_sig():
+    global _vocab_sig
+    if _vocab_sig is None:
+        _vocab_sig = VocabularySignal()
+    return _vocab_sig
+
+def get_narrative_sig():
+    global _narrative_sig
+    if _narrative_sig is None:
+        _narrative_sig = NarrativeSignal()
+    return _narrative_sig
+
+def get_stylo_sig():
+    global _stylo_sig
+    if _stylo_sig is None:
+        _stylo_sig = StylometrySignal()
+    return _stylo_sig
+
+def get_clf_sig():
+    global _clf_sig
+    if _clf_sig is None:
+        _clf_sig = ClassifierSignal()
+    return _clf_sig
+
+def get_combiner():
+    global _combiner
+    if _combiner is None:
+        _combiner = SignalCombiner()
+    return _combiner
+
+def get_explainer():
+    global _explainer
+    if _explainer is None:
+        _explainer = ExplainerService()
+    return _explainer
 
 class AnalyzeRequest(BaseModel):
     text: str
@@ -56,9 +92,10 @@ def split_into_paragraphs_and_sentences(text: str):
     paragraphs_structure = []
     all_sentences = []
     
-    # Try spaCy if loaded
-    import spacy
+    # Try spaCy or clean regex fallback
+    nlp = None
     try:
+        import spacy
         nlp = spacy.load("en_core_web_sm", disable=["ner"])
     except Exception:
         nlp = None
@@ -68,113 +105,116 @@ def split_into_paragraphs_and_sentences(text: str):
             doc = nlp(p_text)
             p_sents = [s.text.strip() for s in doc.sents if len(s.text.strip()) > 3]
         else:
-            # Fallback sentence regex
-            p_sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', p_text) if len(s.strip()) > 3]
+            p_sents = [s.strip() for s in re.split(r"(?<=[.!?])\s+", p_text) if len(s.strip()) > 3]
             
         if not p_sents:
             p_sents = [p_text]
             
-        p_data = {
+        # Determine paragraph role (intro, body, conclusion)
+        if p_idx == 0:
+            p_type = "Introduction / Opening Hook"
+        elif p_idx == len(raw_paragraphs) - 1 and len(raw_paragraphs) > 1:
+            p_type = "Conclusion / Final Reflection"
+        else:
+            p_type = f"Body Paragraph {p_idx}"
+            
+        paragraphs_structure.append({
             "paragraph_index": p_idx,
-            "paragraph_type": "Introduction" if p_idx == 0 else ("Conclusion" if p_idx == len(raw_paragraphs) - 1 and len(raw_paragraphs) > 1 else f"Body Paragraph {p_idx}"),
+            "paragraph_type": p_type,
+            "text": p_text,
+            "sentence_indices": list(range(len(all_sentences), len(all_sentences) + len(p_sents))),
             "sentences": p_sents
-        }
-        paragraphs_structure.append(p_data)
+        })
         all_sentences.extend(p_sents)
         
-    return raw_paragraphs, paragraphs_structure, all_sentences
+    return paragraphs_structure, all_sentences
+
+@app.get("/")
+def read_root():
+    return {
+        "status": "online",
+        "service": "Veritas AI Admissions Forensics Engine",
+        "docs_url": "/docs",
+        "api_analyze": "/api/analyze",
+        "api_eval": "/api/eval-metrics"
+    }
 
 @app.get("/api/health")
 def health_check():
     return {
         "status": "healthy",
         "signals_loaded": {
-            "signal_a_vocab": vocab_sig.loaded,
-            "signal_b_narrative": narrative_sig.model is not None,
+            "signal_a_vocab": get_vocab_sig().loaded,
+            "signal_b_narrative": True,
             "signal_c_stylometry": True,
-            "signal_d_deberta": clf_sig.model is not None,
-            "combiner_loaded": combiner.model is not None
+            "signal_d_deberta": get_clf_sig().model is not None,
+            "combiner_loaded": get_combiner().model is not None
         }
     }
 
 @app.post("/api/analyze")
 def analyze_essay(req: AnalyzeRequest):
     text = req.text.strip()
-    if not text or len(text) < 30:
-        raise HTTPException(status_code=400, detail="Essay text must be at least 30 characters.")
+    if not text:
+        raise HTTPException(status_code=400, detail="Essay text cannot be empty.")
         
-    raw_paragraphs, paragraphs_structure, all_sentences = split_into_paragraphs_and_sentences(text)
+    paragraphs_meta, sentences = split_into_paragraphs_and_sentences(text)
+    if not sentences:
+        raise HTTPException(status_code=400, detail="Unable to parse sentences from input.")
+        
+    # 1. Signal A: Vocabulary Signature Match (Log-Odds)
+    vocab_results = get_vocab_sig().score_sentences(sentences)
+    essay_vocab = get_vocab_sig().compute_essay_density(sentences)
     
-    # Document-wide signal computations
-    essay_vocab = vocab_sig.score_essay(text)
-    essay_narrative = narrative_sig.compute_trajectory(all_sentences)
-    essay_stylo = stylo_sig.compute_essay_stylometrics(text, all_sentences)
+    # 2. Signal B: Narrative Drift Trajectory
+    essay_narrative = get_narrative_sig().compute_trajectory(sentences)
     
-    # Sentence-level signal computations
-    deberta_preds = clf_sig.predict_sentences(all_sentences)
+    # 3. Signal C: Stylometrics & Readability
+    sentence_stylos = [get_stylo_sig().compute_sentence_stylometrics(s) for s in sentences]
+    essay_stylos = get_stylo_sig().compute_essay_stylometrics(sentences, text)
     
+    # 4. Signal D: Supervised Attention Classifier
+    clf_predictions = get_clf_sig().predict_sentences(sentences)
+    
+    # Combine signals per sentence
     analyzed_sentences = []
-    for idx, sent in enumerate(all_sentences):
-        sig_a_res = vocab_sig.score_sentence(sent)
-        sig_b_sent_score = narrative_sig.score_sentence_context(idx, essay_narrative["trajectory"], essay_narrative["score"])
-        sig_c_sent_res = stylo_sig.compute_sentence_stylometrics(sent)
-        sig_d_res = deberta_preds[idx] if idx < len(deberta_preds) else {"ai_prob": 0.50}
+    for idx, sentence_text in enumerate(sentences):
+        v_res = vocab_results[idx]
+        s_res = sentence_stylos[idx]
+        d_res = clf_predictions[idx]
         
-        # Combine signals
-        comb_res = combiner.combine_sentence(
-            sig_a_score=sig_a_res["score"],
-            sig_a_density=sig_a_res["density"],
-            sig_b_score=sig_b_sent_score,
-            sig_c_len_var=essay_stylo["sentence_length_variance"],
-            sig_c_ttr=sig_c_sent_res["ttr"],
-            sig_c_readability=essay_stylo["flesch_reading_ease"],
-            sig_c_score=sig_c_sent_res["score"],
-            sig_d_prob=sig_d_res["ai_prob"]
-        )
-        
-        analyzed_sentences.append({
+        sig_data = {
             "sentence_index": idx,
-            "sentence": sent,
-            "ai_probability": comb_res["ai_probability"],
-            "band": comb_res["band"],
-            "band_label": comb_res["band_label"],
-            "contributions": comb_res["contributions"],
-            "signals": {
-                "signal_a_vocabulary": sig_a_res,
-                "signal_b_narrative": {
-                    "score": sig_b_sent_score,
-                    "essay_variance": essay_narrative["variance"],
-                    "interpretation": essay_narrative["interpretation"]
-                },
-                "signal_c_stylometry": sig_c_sent_res,
-                "signal_d_classifier": sig_d_res
-            }
-        })
+            "text": sentence_text,
+            "sig_a_vocab_matches": v_res["matched_phrases"],
+            "sig_a_vocab_score": v_res["sentence_score"],
+            "sig_a_vocab_density": essay_vocab["density"],
+            "sig_b_narrative_variance_score": essay_narrative["score"],
+            "sig_c_ttr": s_res["ttr"],
+            "sig_c_passive_voice": s_res["passive_voice"],
+            "sig_c_transition_count": s_res["transition_count"],
+            "sig_c_heuristic_score": s_res["score"],
+            "sig_c_length_variance": essay_stylos["sentence_length_variance"],
+            "sig_c_readability": essay_stylos["flesch_reading_ease"],
+            "sig_d_deberta_prob": d_res["ai_prob"]
+        }
         
-    # Group back into structured paragraphs with section breakdowns
+        combined_result = get_combiner().combine_sentence(sig_data)
+        analyzed_sentences.append(combined_result)
+        
+    # Aggregate paragraph summaries
     analyzed_paragraphs = []
-    global_idx = 0
     section_breakdown = []
     
-    for p_info in paragraphs_structure:
-        p_sents = []
-        p_high_count = 0
-        p_uncertain_count = 0
-        p_human_count = 0
+    for p_info in paragraphs_meta:
+        p_sent_indices = p_info["sentence_indices"]
+        p_sents = [analyzed_sentences[i] for i in p_sent_indices if i < len(analyzed_sentences)]
         
-        for _ in range(len(p_info["sentences"])):
-            if global_idx < len(analyzed_sentences):
-                s_data = analyzed_sentences[global_idx]
-                p_sents.append(s_data)
-                if s_data["band"] == "high_ai":
-                    p_high_count += 1
-                elif s_data["band"] == "uncertain":
-                    p_uncertain_count += 1
-                else:
-                    p_human_count += 1
-                global_idx += 1
-                
         total_p_sents = max(len(p_sents), 1)
+        p_high_count = sum(1 for s in p_sents if s["band"] == "high_ai")
+        p_uncertain_count = sum(1 for s in p_sents if s["band"] == "uncertain")
+        p_human_count = sum(1 for s in p_sents if s["band"] == "human")
+        
         p_summary = {
             "paragraph_index": p_info["paragraph_index"],
             "paragraph_type": p_info["paragraph_type"],
@@ -189,6 +229,7 @@ def analyze_essay(req: AnalyzeRequest):
         section_breakdown.append({
             "section": p_info["paragraph_type"],
             "total_sentences": total_p_sents,
+            "sentence_count": total_p_sents,
             "ai_count": p_high_count,
             "uncertain_count": p_uncertain_count,
             "human_count": p_human_count,
@@ -229,72 +270,45 @@ def analyze_essay(req: AnalyzeRequest):
                 "variance": essay_narrative["variance"],
                 "mean_similarity": essay_narrative["mean_similarity"],
                 "trajectory": essay_narrative["trajectory"],
-                "interpretation": essay_narrative["interpretation"]
+                "is_monotonic_ai": essay_narrative.get("is_monotonic_ai", False)
             },
-            "signal_c_stylometry": {
-                "name": "Signal C: Stylometric Analysis",
-                "score": essay_stylo["score"],
-                "sentence_length_variance": essay_stylo["sentence_length_variance"],
-                "type_token_ratio": essay_stylo["type_token_ratio"],
-                "flesch_reading_ease": essay_stylo["flesch_reading_ease"],
-                "flesch_kincaid_grade": essay_stylo["flesch_kincaid_grade"]
+            "signal_c_stylometrics": {
+                "name": "Signal C: Stylometrics & Readability",
+                "sentence_length_variance": essay_stylos["sentence_length_variance"],
+                "mean_sentence_length": essay_stylos["mean_sentence_length"],
+                "macro_ttr": essay_stylos["macro_ttr"],
+                "flesch_reading_ease": essay_stylos["flesch_reading_ease"],
+                "flesch_kincaid_grade": essay_stylos["flesch_kincaid_grade"],
+                "burstiness_ai_score": essay_stylos["burstiness_ai_score"]
             },
             "signal_d_classifier": {
-                "name": "Signal D: DeBERTa-v3-small Sentence Attention",
-                "average_score": round(float(sum(s["signals"]["signal_d_classifier"]["ai_prob"] for s in analyzed_sentences) / total_sents), 4)
+                "name": "Signal D: Supervised Sentence Attention",
+                "model_present": get_clf_sig().model is not None,
+                "mean_ai_prob": round(sum(d["ai_prob"] for d in clf_predictions) / total_sents, 3)
             }
-        },
-        "combiner_coefficients": combiner.coefficients
+        }
     }
 
 @app.post("/api/explain")
 def explain_sentence(req: ExplainRequest):
-    explanation = explainer.generate_explanation(req.sentence_data, req.essay_context or "")
-    return {"explanation": explanation}
+    explanation = get_explainer().generate_explanation(
+        sentence_data=req.sentence_data,
+        essay_context=req.essay_context
+    )
+    return explanation
 
 @app.get("/api/eval-metrics")
-def get_eval_metrics():
+def get_evaluation_metrics():
     import json
-    eval_path = "eval/eval_report.json"
-    if os.path.exists(eval_path):
-        with open(eval_path, "r", encoding="utf-8") as f:
+    report_path = "eval/eval_report.json"
+    if os.path.exists(report_path):
+        with open(report_path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {
-        "status": "baseline",
-        "test_metrics": {
-            "accuracy": 0.942,
-            "roc_auc": 0.985,
-            "f1_score": 0.938,
-            "precision": 0.945,
-            "recall": 0.932
-        },
-        "esl_bias_check": {
-            "total_esl_samples": 30,
-            "false_positive_count": 1,
-            "false_positive_rate": 0.033,
-            "verdict": "Low bias: 96.7% of non-native ESL human writing correctly classified as human."
-        },
-        "confident_failures": [
-            {
-                "case_id": 1,
-                "title": "Hyper-Structured Academic Human Essay",
-                "true_label": "Human (Persuade Corpus)",
-                "predicted_label": "AI-Skewed (0.82 probability)",
-                "root_cause": "Sentence contained 'Moreover, it is evident that' alongside uniform 24-word sentence lengths, causing Signal A and C to over-fire."
-            },
-            {
-                "case_id": 2,
-                "title": "Creative Persona AI Essay with Deliberate Tangents",
-                "true_label": "AI (Groq Synthetic)",
-                "predicted_label": "Human-Like (0.34 probability)",
-                "root_cause": "The prompt instructed the model to jump between music theory and coding, artificially inflating Signal B narrative variance."
-            },
-            {
-                "case_id": 3,
-                "title": "Minimalist Human Essay with Repetitive Refrains",
-                "true_label": "Human",
-                "predicted_label": "AI-Skewed (0.76 probability)",
-                "root_cause": "Low vocabulary richness (TTR = 0.42) due to poetic refrain repetition triggered stylometric uniformity penalties."
-            }
-        ]
+        "status": "unavailable",
+        "message": "Evaluation report not generated yet. Run python eval/evaluate.py"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)

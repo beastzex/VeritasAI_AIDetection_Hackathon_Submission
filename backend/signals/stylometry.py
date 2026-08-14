@@ -5,15 +5,17 @@ from typing import Dict, Any, List
 class StylometrySignal:
     def __init__(self):
         self.nlp = None
-        self._load_spacy()
         
-    def _load_spacy(self):
-        try:
-            import spacy
-            self.nlp = spacy.load("en_core_web_sm")
-        except Exception as e:
-            print(f"Notice: spaCy deferred load: {e}")
-            self.nlp = None
+    def _get_nlp(self):
+        if self.nlp is None:
+            try:
+                import spacy
+                # Load lightweight spacy disabling heavy parser/ner pipelines
+                self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
+            except Exception as e:
+                print(f"Notice: spaCy deferred load: {e}")
+                self.nlp = None
+        return self.nlp
 
     def compute_sentence_stylometrics(self, sentence: str) -> Dict[str, Any]:
         """Extracts sentence-level stylometric features."""
@@ -42,81 +44,73 @@ class StylometrySignal:
         
         # Passive voice detection
         has_passive = False
-        if self.nlp:
+        nlp = self._get_nlp()
+        if nlp:
             try:
-                doc = self.nlp(sentence)
-                for token in doc:
-                    if token.dep_ in ["auxpass", "agent"] or (token.dep_ == "aux" and token.head.tag_ == "VBN" and token.text.lower() in ["is", "was", "were", "been", "being", "are"]):
-                        has_passive = True
-                        break
+                doc = nlp(sentence)
+                for i in range(len(doc) - 1):
+                    if doc[i].tag_ in ["VBD", "VBN", "VBZ", "VBP", "VBG", "VB"] and doc[i].lemma_ == "be":
+                        if doc[i+1].tag_ == "VBN":
+                            has_passive = True
+                            break
             except Exception:
-                pass
+                has_passive = bool(re.search(r"\b(is|was|were|been|being|are|be)\s+\w+ed\b", sent_lower))
         else:
-            # Fallback regex passive heuristic (be + VBN suffix)
-            if re.search(r"\b(is|was|were|been|being|are|be)\s+\w+ed\b", sent_lower):
-                has_passive = True
-                
-        # AI text often features elevated formulaic transitions, medium-high uniform TTR, and passive constructions
-        ai_risk = 0.0
-        if transition_count >= 1:
-            ai_risk += 0.35 * transition_count
-        if has_passive:
-            ai_risk += 0.15
-        if 18 <= num_words <= 32: # AI sweet spot length
-            ai_risk += 0.10
+            has_passive = bool(re.search(r"\b(is|was|were|been|being|are|be)\s+\w+ed\b", sent_lower))
             
-        score = min(max(round(1.0 / (1.0 + math.exp(-3.0 * (ai_risk - 0.4))), 4), 0.05), 0.95)
-        
+        # Stylometric heuristic scoring
+        stylo_score = 0.5
+        if transition_count >= 1:
+            stylo_score += 0.20
+        if ttr < 0.65 and num_words > 12:
+            stylo_score += 0.15
+        elif ttr > 0.85 and num_words > 12:
+            stylo_score -= 0.15
+            
         return {
             "word_count": num_words,
             "ttr": round(ttr, 3),
             "transition_count": transition_count,
             "passive_voice": has_passive,
-            "score": score
+            "score": round(max(0.0, min(1.0, stylo_score)), 3)
         }
 
-    def compute_essay_stylometrics(self, text: str, sentences: List[str]) -> Dict[str, Any]:
-        """Computes document-wide stylometric vectors."""
-        lengths = [len(re.findall(r"\b\w+\b", s)) for s in sentences if len(s.strip()) > 10]
-        length_variance = float(sum((l - (sum(lengths)/max(len(lengths),1)))**2 for l in lengths) / max(len(lengths), 1)) if lengths else 10.0
+    def compute_essay_stylometrics(self, sentences: List[str], full_text: str) -> Dict[str, Any]:
+        """Calculates macro-level stylometric indicators across the whole essay."""
+        if not sentences:
+            return {"length_variance": 0.0, "avg_word_length": 0.0, "ttr": 0.0, "readability": 50.0}
+            
+        lengths = [len(re.findall(r"\b\w+\b", s)) for s in sentences if len(s.strip()) > 5]
+        if not lengths:
+            lengths = [10]
+            
+        mean_len = sum(lengths) / len(lengths)
+        len_variance = sum((l - mean_len) ** 2 for l in lengths) / len(lengths)
         
-        all_words = re.findall(r"\b[a-zA-Z']+\b", text.lower())
-        total_words = len(all_words)
-        unique_words = len(set(all_words))
-        overall_ttr = unique_words / max(total_words, 1)
+        words = re.findall(r"\b[a-zA-Z]+\b", full_text)
+        total_words = max(len(words), 1)
+        unique_words = len(set(w.lower() for w in words))
+        macro_ttr = unique_words / total_words
+        avg_word_len = sum(len(w) for w in words) / total_words
         
-        # Readability metrics via textstat
-        flesch_reading_ease = 65.0
-        flesch_kincaid_grade = 10.0
+        # Readability metrics
         try:
             import textstat
-            flesch_reading_ease = textstat.flesch_reading_ease(text)
-            flesch_kincaid_grade = textstat.flesch_kincaid_grade(text)
+            flesch = textstat.flesch_reading_ease(full_text)
+            fk_grade = textstat.flesch_kincaid_grade(full_text)
         except Exception:
-            pass
+            flesch = 60.0
+            fk_grade = 10.0
             
-        # Punctuation diversity
-        punct_count = len(re.findall(r"[,;:\-\—\(\)]", text))
-        punct_density = punct_count / max(total_words, 1)
-        
-        # High sentence length variance indicates human writing; low variance indicates AI
-        # Human essays often have bursty sentence lengths (short punches mixed with complex clauses)
-        length_var_score = 1.0 / (1.0 + math.exp(0.08 * (length_variance - 45.0))) # low variance -> high AI score
-        
-        combined_score = round(float(0.4 * length_var_score + 0.3 * (1.0 if overall_ttr > 0.65 else 0.3) + 0.3 * (1.0 if flesch_kincaid_grade > 11.5 else 0.4)), 4)
+        # Length variance: High variance = human burstiness; Low variance = monotonic AI
+        burstiness_score = 1.0 - min(1.0, len_variance / 80.0)
         
         return {
-            "sentence_length_variance": round(length_variance, 2),
-            "type_token_ratio": round(overall_ttr, 3),
-            "flesch_reading_ease": round(flesch_reading_ease, 1),
-            "flesch_kincaid_grade": round(flesch_kincaid_grade, 1),
-            "punctuation_density": round(punct_density, 3),
-            "score": min(max(combined_score, 0.05), 0.95),
-            "feature_vector": [
-                round(length_variance, 2),
-                round(overall_ttr, 3),
-                round(flesch_reading_ease, 1),
-                round(flesch_kincaid_grade, 1),
-                round(punct_density, 3)
-            ]
+            "sentence_length_variance": round(len_variance, 2),
+            "mean_sentence_length": round(mean_len, 1),
+            "macro_ttr": round(macro_ttr, 3),
+            "avg_word_length": round(avg_word_len, 2),
+            "flesch_reading_ease": round(flesch, 1),
+            "flesch_kincaid_grade": round(fk_grade, 1),
+            "burstiness_ai_score": round(burstiness_score, 3)
         }
