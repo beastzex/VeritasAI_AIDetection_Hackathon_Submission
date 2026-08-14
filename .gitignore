@@ -1,0 +1,117 @@
+# ==============================================================================
+# SENSITIVE CREDENTIALS & SECRETS (CRITICAL - NEVER COMMIT)
+# ==============================================================================
+.env
+.env.*
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+kaggle.json
+*/kaggle.json
+**/kaggle.json
+*.pem
+*.key
+*.cert
+*.p12
+
+# ==============================================================================
+# HEAVY MACHINE LEARNING WEIGHTS & CHECKPOINTS (EXCEED GITHUB LIMITS)
+# ==============================================================================
+*.safetensors
+*.pt
+*.bin
+*.ckpt
+*.onnx
+checkpoints/
+**/checkpoints/
+backend/model_weights/deberta_essay_classifier/
+!backend/model_weights/signature_list.json
+!backend/model_weights/combiner_model.pkl
+
+# ==============================================================================
+# PYTHON VIRTUAL ENVIRONMENTS & RUNTIME
+# ==============================================================================
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+bin/
+include/
+lib/
+lib64/
+share/
+pyvenv.cfg
+pip-selfcheck.json
+
+# ==============================================================================
+# PYTHON BYTECODE & CACHES
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ==============================================================================
+# NODE / JAVASCRIPT / FRONTEND BUILD OUTPUTS
+# ==============================================================================
+node_modules/
+**/node_modules/
+frontend/dist/
+frontend/build/
+.npm
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==============================================================================
+# LARGE RAW DATASETS & TEMPORARY ARTIFACTS
+# ==============================================================================
+data/raw/
+data/processed/train.csv
+*.zip
+*.tar.gz
+*.tar
+*.7z
+*.rar
+scratch/
+**/scratch/
+.system_generated/
+*.log
+
+# ==============================================================================
+# OS & IDE CONFIGURATIONS
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

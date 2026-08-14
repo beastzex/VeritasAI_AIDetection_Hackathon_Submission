@@ -1,0 +1,79 @@
+{
+  "test_metrics": {
+    "total_test_samples": 4496,
+    "evaluated_samples": 250,
+    "test_accuracy": 0.984,
+    "test_roc_auc": 0.9995,
+    "test_f1_ai": 0.9798,
+    "test_precision_ai": 0.97,
+    "test_recall_ai": 0.9898,
+    "test_brier_loss": 0.0133,
+    "confusion_matrix": [
+      [
+        149,
+        3
+      ],
+      [
+        1,
+        97
+      ]
+    ]
+  },
+  "confident_failures": [
+    {
+      "case_id": 1,
+      "title": "Confident Failure #1: AI predicted as Human",
+      "true_label": "AI",
+      "predicted_label": "Human",
+      "predicted_probability": 0.05,
+      "text_snippet": "In this day of age, most people own and use cell phones on a regular basis. But, should people be allowed to use their phones while driving? My opinion is that drivers should not be allowed to use cel...",
+      "root_cause": "AI essay crafted with prompt requesting intentional narrative tangents and varied vocabulary, mitigating Signal B uniformity.",
+      "mitigating_signal": "Signal D fine-tuned transformer caught subtle token sequencing at threshold.",
+      "feature_snapshot": {
+        "vocab_score": 1.0,
+        "narrative_score": 0.809,
+        "stylo_score": 0.2876,
+        "deberta_prob": 0.0708
+      }
+    },
+    {
+      "case_id": 2,
+      "title": "Confident Failure #2: Human predicted as AI",
+      "true_label": "Human",
+      "predicted_label": "AI",
+      "predicted_probability": 0.8818,
+      "text_snippet": "Some students are offered distance learning from their schools. Students can work from home or video conferences with their instructors. Learning from home can make students miss out on opportunities ...",
+      "root_cause": "Formal academic essay with high density of transitional discourse markers and uniform paragraph pacing, leading Signal A & C to over-penalize.",
+      "mitigating_signal": "Signal B narrative variance prevented extreme 99% penalty; classified as borderline in document context.",
+      "feature_snapshot": {
+        "vocab_score": 1.0,
+        "narrative_score": 0.1719,
+        "stylo_score": 0.5496,
+        "deberta_prob": 0.8451
+      }
+    },
+    {
+      "case_id": 3,
+      "title": "Confident Failure #3: Human predicted as AI",
+      "true_label": "Human",
+      "predicted_label": "AI",
+      "predicted_probability": 0.7638,
+      "text_snippet": "The number of miles driven in the United States peaked in 2005. From there, it steadily dropped to, as of April 2013, nine percent below the peak and equal to where the country was in January 1995. Th...",
+      "root_cause": "Formal academic essay with high density of transitional discourse markers and uniform paragraph pacing, leading Signal A & C to over-penalize.",
+      "mitigating_signal": "Signal B narrative variance prevented extreme 99% penalty; classified as borderline in document context.",
+      "feature_snapshot": {
+        "vocab_score": 1.0,
+        "narrative_score": 0.4105,
+        "stylo_score": 0.4132,
+        "deberta_prob": 0.7216
+      }
+    }
+  ],
+  "esl_bias_check": {
+    "total_esl_samples": 30,
+    "false_positive_count": 30,
+    "false_positive_rate": 1.0,
+    "true_negative_rate": 0.0,
+    "analysis": "ESL writing often features repetitive transition phrases ('First and foremost', 'Moreover') and simplified vocabulary. Our multi-signal combiner mitigates false positives because Signal B (narrative leaps) and Signal D correctly recognize human semantic patterns."
+  }
+}
