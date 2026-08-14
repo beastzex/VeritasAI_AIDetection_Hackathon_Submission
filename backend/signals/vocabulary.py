@@ -49,7 +49,7 @@ class VocabularySignal:
         """
         tokens = self.tokenize(sentence)
         if not tokens:
-            return {"score": 0.0, "density": 0.0, "matched_phrases": [], "flagged": False}
+            return {"score": 0.0, "sentence_score": 0.0, "density": 0.0, "matched_phrases": [], "flagged": False}
             
         ngrams = self.extract_ngrams(tokens)
         matched = []
@@ -77,10 +77,20 @@ class VocabularySignal:
             
         return {
             "score": round(float(score), 4),
+            "sentence_score": round(float(score), 4),
             "density": round(float(density), 4),
             "matched_phrases": matched,
             "flagged": score >= 0.5
         }
+
+    def score_sentences(self, sentences: List[str]) -> List[Dict[str, Any]]:
+        """Scores a list of sentences."""
+        return [self.score_sentence(s) for s in sentences]
+        
+    def compute_essay_density(self, sentences: List[str]) -> Dict[str, Any]:
+        """Calculates essay-level vocabulary signature density."""
+        full_text = " ".join(sentences)
+        return self.score_essay(full_text)
         
     def score_essay(self, text: str) -> Dict[str, Any]:
         """Aggregated score across whole essay."""
