@@ -16,9 +16,9 @@ import FAQSection from './components/FAQSection';
 import ClosingTealBand from './components/ClosingTealBand';
 import Footer from './components/Footer';
 
-// Always use relative paths — Vercel's vercel.json rewrites proxy /api/* to Render server-side.
-// This eliminates CORS entirely because the browser never makes cross-origin requests.
-const API_BASE = '';
+// Call Render backend directly. Custom CORS middleware on Render ensures
+// Access-Control-Allow-Origin: * on ALL responses including errors.
+const API_BASE = 'https://veritasai-oxc7.onrender.com';
 
 export default function App() {
   const [theme, setTheme] = useState('dark');

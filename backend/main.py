@@ -23,15 +23,40 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable robust CORS for Vercel, localhost, and all cloud origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+",
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+# Custom CORS middleware that adds headers to ALL responses, including 500 errors.
+# FastAPI's built-in CORSMiddleware can miss error responses from unhandled exceptions.
+class RobustCORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Handle preflight OPTIONS requests immediately
+        if request.method == "OPTIONS":
+            return Response(
+                status_code=200,
+                headers={
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Max-Age": "86400",
+                }
+            )
+        
+        try:
+            response = await call_next(request)
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            response = Response("Internal Server Error", status_code=500)
+        
+        # Add CORS headers to EVERY response
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
+app.add_middleware(RobustCORSMiddleware)
 
 # Lazy singletons for memory safety and instant port binding (< 0.05s)
 _vocab_sig = None
