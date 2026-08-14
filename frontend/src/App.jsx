@@ -16,7 +16,9 @@ import FAQSection from './components/FAQSection';
 import ClosingTealBand from './components/ClosingTealBand';
 import Footer from './components/Footer';
 
-const API_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : '';
+// Always use relative paths — Vercel's vercel.json rewrites proxy /api/* to Render server-side.
+// This eliminates CORS entirely because the browser never makes cross-origin requests.
+const API_BASE = '';
 
 export default function App() {
   const [theme, setTheme] = useState('dark');
