@@ -2,25 +2,7 @@ import os
 import sys
 import subprocess
 
-# 1. Hotpatch huggingface_hub.HfFolder to prevent Gradio import crashes on newer hub versions
-try:
-    import huggingface_hub
-    if not hasattr(huggingface_hub, "HfFolder"):
-        class HfFolder:
-            @classmethod
-            def get_token(cls):
-                return os.environ.get("HF_TOKEN") or None
-            @classmethod
-            def save_token(cls, token):
-                pass
-            @classmethod
-            def delete_token(cls):
-                pass
-        huggingface_hub.HfFolder = HfFolder
-except Exception as e:
-    print(f"HfFolder patch notice: {e}")
-
-# 2. Ensure spacy english model is available
+# Ensure spacy english model is available
 try:
     import spacy
     try:
@@ -30,28 +12,10 @@ try:
 except Exception as e:
     print(f"Notice during spacy setup: {e}")
 
-# 3. Import Gradio and FastAPI backend
-import gradio as gr
-from backend.main import app as fastapi_app
-
-def check_health():
-    return {
-        "status": "healthy",
-        "service": "Veritas AI Forensics Gateway",
-        "endpoints": ["/api/analyze", "/api/explain", "/api/eval-metrics", "/docs"],
-        "architecture": "4 Non-LLM Multi-Signal Pipeline + Regularized Logistic Regression"
-    }
-
-with gr.Blocks(title="Veritas AI Forensics API") as demo:
-    gr.Markdown("# 🔬 Veritas AI — Multi-Signal Admissions Forensics API")
-    gr.Markdown("FastAPI backend gateway is active. REST API endpoints `/api/analyze` and `/docs` are operational.")
-    with gr.Row():
-        btn = gr.Button("Check Gateway Health", variant="primary")
-        out = gr.JSON()
-    btn.click(fn=check_health, inputs=[], outputs=out)
-
-# Mount FastAPI app onto Gradio
-app = gr.mount_gradio_app(fastapi_app, demo, path="/")
+import uvicorn
+from backend.main import app
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    port = int(os.environ.get("PORT", 7860))
+    print(f"Starting Veritas AI FastAPI Gateway on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
