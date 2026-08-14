@@ -1,3 +1,14 @@
+---
+title: Veritas AI Backend
+emoji: 🔬
+colorFrom: orange
+colorTo: gray
+sdk: gradio
+sdk_version: 4.20.0
+app_file: app.py
+pinned: false
+---
+
 # Veritas AI — Multi-Signal Admissions Essay Forensics Engine
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
