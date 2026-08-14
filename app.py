@@ -12,7 +12,6 @@ try:
 except Exception as e:
     print(f"Notice during spacy setup: {e}")
 
-import uvicorn
 import gradio as gr
 from backend.main import app as fastapi_app
 
@@ -32,9 +31,8 @@ with gr.Blocks(title="Veritas AI Forensics API") as demo:
         out = gr.JSON()
     btn.click(fn=check_health, inputs=[], outputs=out)
 
-# Mount Gradio app onto FastAPI
+# Mount FastAPI app onto Gradio
 app = gr.mount_gradio_app(fastapi_app, demo, path="/")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 7860))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    demo.launch(server_name="0.0.0.0", server_port=7860)
