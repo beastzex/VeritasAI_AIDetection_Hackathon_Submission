@@ -19,7 +19,7 @@ pinned: false
 
 > **Veritas AI** is an end-to-end, multi-signal AI admissions essay detection engine engineered for scientific transparency, sentence-level interpretability, and bias-aware fairness. It strictly adheres to the **Non-LLM Verdict Rule**: no chat completion model is ever allowed to issue or vote on authenticity verdicts.
 
-* **🌐 Live Deployed Application**: [https://veritas-ai-brown.vercel.app/](https://veritas-ai-brown.vercel.app/)
+* **🌐 Live Deployed Application**: [https://veritas-ai-brown.vercel.app/](https://veritas-ai-brown.vercel.app/)  real essay working may not work , as i fine tuned my models , so i dont have any hosting platform where i can host my model for free , so apologies for this , but if you clone this repo and add your secrets , then it will work great 
 * **📄 Executive Technical Overview (2-Page PDF)**: [Veritas_AI_Technical_Overview.pdf](./Veritas_AI_Technical_Overview.pdf)
 
 ---
