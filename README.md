@@ -21,13 +21,12 @@ pinned: false
 
 * **🌐 Live Deployed Application**: [https://veritas-ai-brown.vercel.app/](https://veritas-ai-brown.vercel.app/)
 * **📄 Executive Technical Overview (2-Page PDF)**: [Veritas_AI_Technical_Overview.pdf](./Veritas_AI_Technical_Overview.pdf)
-* **🎥 Full Walkthrough Video**: [`videos_and_images/20260815-1657-03.4420826.mp4`](./videos_and_images/20260815-1657-03.4420826.mp4)
 
 ---
 
 ## 📸 Product Overview & Interface
 
-![Veritas AI Hero Banner](./videos_and_images/Screenshot%202026-08-15%20223049.png)
+![Veritas AI Hero Banner](videos_and_images/01_hero.png)
 
 ---
 
@@ -35,12 +34,12 @@ pinned: false
 
 Admissions officers can paste personal statements directly or evaluate against pre-calibrated benchmark presets:
 
-![Inference Studio Workbench](./videos_and_images/Screenshot%202026-08-15%20223105.png)
+![Inference Studio Workbench](videos_and_images/02_workbench.png)
 
 ### 🎹 Sentence-Level Authenticity Heatmap DAW
 Sentences are parsed across paragraphs and color-coded across three calibrated risk bands: **Red for High AI (&ge;70%)**, **Gray for Mixed Uncertainty (40–70%)**, and **Teal for Human Authenticity (&lt;40%)**:
 
-![Sentence Heatmap DAW](./videos_and_images/Screenshot%202026-08-15%20223111.png)
+![Sentence Heatmap DAW](videos_and_images/03_heatmap.png)
 
 ---
 
@@ -50,7 +49,7 @@ Clicking any highlighted sentence opens the right-hand **Evidence Inspector**, p
 
 | Evidence Inspector & Groq Translation | Forensic Signal Radar & Telemetry |
 |:---:|:---:|
-| ![Sentence Evidence Inspector](./videos_and_images/Screenshot%202026-08-15%20223127.png) | ![Signal Radar](./videos_and_images/Screenshot%202026-08-15%20223204.png) |
+| ![Sentence Evidence Inspector](videos_and_images/04_evidence_inspector.png) | ![Signal Radar](videos_and_images/05_signal_radar.png) |
 | *Exact n-gram Z-scores, cosine velocity, and plain-English translation* | *Multi-dimensional signal contribution radar* |
 
 ---
@@ -80,7 +79,7 @@ graph TD
 
 | Architecture Overview Window | Interactive Terminal & Learned Weights |
 |:---:|:---:|
-| ![Architecture Overview](./videos_and_images/Screenshot%202026-08-15%20223141.png) | ![Mac Terminal](./videos_and_images/Screenshot%202026-08-15%20223149.png) |
+| ![Architecture Overview](videos_and_images/06_architecture.png) | ![Mac Terminal](videos_and_images/07_mac_terminal.png) |
 | *Orthogonal feature extraction pipelines* | *Deterministic weights and decision boundary parameters* |
 
 ---
@@ -134,7 +133,7 @@ The four analytical signals are synthesized by a regularized `sklearn.linear_mod
 
 | Held-Out Verification Metrics | ESL Non-Native Applicant Protection |
 |:---:|:---:|
-| ![Held-Out Test Metrics](./videos_and_images/Screenshot%202026-08-15%20223220.png) | ![ESL Fairness Benchmark](./videos_and_images/Screenshot%202026-08-15%20223224.png) |
+| ![Held-Out Test Metrics](videos_and_images/08_held_out_metrics.png) | ![ESL Fairness Benchmark](videos_and_images/09_esl_fairness.png) |
 
 Evaluated on held-out test split ($N = 4,496$ essays):
 
