@@ -57,7 +57,7 @@ Clicking any highlighted sentence opens the right-hand **Evidence Inspector**, p
 | Evidence Inspector & Groq Translation | Forensic Signal Radar & Telemetry |
 |:---:|:---:|
 | ![Sentence Evidence Inspector](videos_and_images/04_evidence_inspector.png) | ![Signal Radar](videos_and_images/05_signal_radar.png) |
-| *Exact n-gram Z-scores, cosine velocity, and plain-English translation* | *Multi-dimensional signal contribution radar* |
+
 
 ---
 
@@ -87,7 +87,7 @@ graph TD
 | Architecture Overview Window | Interactive Terminal & Learned Weights |
 |:---:|:---:|
 | ![Architecture Overview](videos_and_images/06_architecture.png) | ![Mac Terminal](videos_and_images/07_mac_terminal.png) |
-| *Orthogonal feature extraction pipelines* | *Deterministic weights and decision boundary parameters* |
+
 
 ---
 
