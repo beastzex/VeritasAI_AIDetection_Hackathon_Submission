@@ -75,10 +75,17 @@ class StylometrySignal:
             "score": round(max(0.0, min(1.0, stylo_score)), 3)
         }
 
-    def compute_essay_stylometrics(self, sentences: List[str], full_text: str) -> Dict[str, Any]:
+    def compute_essay_stylometrics(self, sentences_or_text, full_text_or_sentences=None) -> Dict[str, Any]:
         """Calculates macro-level stylometric indicators across the whole essay."""
+        if isinstance(sentences_or_text, list):
+            sentences = sentences_or_text
+            full_text = full_text_or_sentences if isinstance(full_text_or_sentences, str) else " ".join(sentences)
+        else:
+            full_text = str(sentences_or_text)
+            sentences = full_text_or_sentences if isinstance(full_text_or_sentences, list) else [s.strip() for s in re.split(r"(?<=[.!?])\s+", full_text) if s.strip()]
+            
         if not sentences:
-            return {"length_variance": 0.0, "avg_word_length": 0.0, "ttr": 0.0, "readability": 50.0}
+            return {"length_variance": 0.0, "sentence_length_variance": 0.0, "mean_sentence_length": 10.0, "avg_word_length": 0.0, "ttr": 0.0, "macro_ttr": 0.0, "readability": 50.0, "flesch_reading_ease": 60.0, "flesch_kincaid_grade": 10.0, "burstiness_ai_score": 0.5}
             
         lengths = [len(re.findall(r"\b\w+\b", s)) for s in sentences if len(s.strip()) > 5]
         if not lengths:
@@ -107,9 +114,13 @@ class StylometrySignal:
         
         return {
             "sentence_length_variance": round(len_variance, 2),
+            "length_variance": round(len_variance, 2),
             "mean_sentence_length": round(mean_len, 1),
             "macro_ttr": round(macro_ttr, 3),
+            "type_token_ratio": round(macro_ttr, 3),
+            "ttr": round(macro_ttr, 3),
             "avg_word_length": round(avg_word_len, 2),
+            "readability": round(flesch, 1),
             "flesch_reading_ease": round(flesch, 1),
             "flesch_kincaid_grade": round(fk_grade, 1),
             "burstiness_ai_score": round(burstiness_score, 3)
