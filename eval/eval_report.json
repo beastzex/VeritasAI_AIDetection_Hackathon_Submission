@@ -74,6 +74,6 @@
     "false_positive_count": 1,
     "false_positive_rate": 0.0333,
     "true_negative_rate": 0.9667,
-    "analysis": "Evaluated against authentic non-native English learner (ESL) essays. While traditional log-odds detectors flag ESL essays due to repetitive transitional markers ('First and foremost', 'Moreover'), Veritas AI achieves a low 3.3% false positive rate (96.7% Specificity) because Signal B (narrative leaps) and Signal D correctly recognize human semantic patterns."
+    "analysis": "Evaluated against authentic non-native English learner (ESL) essays. While traditional log-odds detectors penalize international applicants who write with structured transitional phrases ('In conclusion', 'Moreover'), Veritas AI protects authentic non-native applicants by incorporating Signal B (Narrative Trajectory Variance) and Signal C (Length Burstiness, \u03b2 = -0.4817)."
   }
 }
