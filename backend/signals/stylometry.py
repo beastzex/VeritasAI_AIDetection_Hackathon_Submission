@@ -123,5 +123,7 @@ class StylometrySignal:
             "readability": round(flesch, 1),
             "flesch_reading_ease": round(flesch, 1),
             "flesch_kincaid_grade": round(fk_grade, 1),
-            "burstiness_ai_score": round(burstiness_score, 3)
+            "burstiness_ai_score": round(burstiness_score, 3),
+            "score": round(burstiness_score, 3),
+            "stylo_score": round(burstiness_score, 3)
         }
