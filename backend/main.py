@@ -29,19 +29,19 @@ from starlette.responses import Response
 
 # Custom CORS middleware that adds headers to ALL responses, including 500 errors.
 # FastAPI's built-in CORSMiddleware can miss error responses from unhandled exceptions.
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, Origin, X-Requested-With",
+    "Access-Control-Expose-Headers": "Content-Length, Content-Type",
+    "Access-Control-Max-Age": "86400",
+}
+
 class RobustCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Handle preflight OPTIONS requests immediately
         if request.method == "OPTIONS":
-            return Response(
-                status_code=200,
-                headers={
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                    "Access-Control-Allow-Headers": "*",
-                    "Access-Control-Max-Age": "86400",
-                }
-            )
+            return Response(status_code=200, headers=CORS_HEADERS)
         
         try:
             response = await call_next(request)
@@ -51,9 +51,8 @@ class RobustCORSMiddleware(BaseHTTPMiddleware):
             response = Response("Internal Server Error", status_code=500)
         
         # Add CORS headers to EVERY response
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "*"
+        for key, value in CORS_HEADERS.items():
+            response.headers[key] = value
         return response
 
 app.add_middleware(RobustCORSMiddleware)
