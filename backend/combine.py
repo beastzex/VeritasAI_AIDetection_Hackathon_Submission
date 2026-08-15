@@ -2,7 +2,7 @@ import os
 import re
 import joblib
 import numpy as np
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Optional
 
 class SignalCombiner:
     def __init__(self, model_path: str = "backend/model_weights/combiner_model.pkl"):
@@ -40,53 +40,68 @@ class SignalCombiner:
 
     def combine_sentence(
         self,
-        sig_data_or_a_score: Union[Dict[str, Any], float],
+        sig_data_or_a_score: Union[Dict[str, Any], float, None] = None,
         sig_a_density: float = 0.0,
         sig_b_score: float = 0.5,
         sig_c_len_var: float = 20.0,
         sig_c_ttr: float = 0.7,
         sig_c_readability: float = 60.0,
         sig_c_score: float = 0.5,
-        sig_d_prob: float = 0.5
+        sig_d_prob: float = 0.5,
+        sig_a_score: Optional[float] = None,
+        **kwargs
     ) -> Dict[str, Any]:
         """
         Combines 4 signals for a single sentence and returns calibrated AI probability
-        and relative signal contributions. Accepts either a dictionary or positional arguments.
+        and relative signal contributions. Accepts a dictionary, positional arguments, or keyword arguments.
         """
         if isinstance(sig_data_or_a_score, dict):
             d = sig_data_or_a_score
-            sig_a_score = float(d.get("sig_a_vocab_score", 0.0))
-            sig_a_density = float(d.get("sig_a_vocab_density", 0.0))
-            sig_b_score = float(d.get("sig_b_narrative_variance_score", 0.5))
-            sig_c_len_var = float(d.get("sig_c_length_variance", 20.0))
-            sig_c_ttr = float(d.get("sig_c_ttr", 0.7))
-            sig_c_readability = float(d.get("sig_c_readability", 60.0))
-            sig_c_score = float(d.get("sig_c_heuristic_score", 0.5))
-            sig_d_prob = float(d.get("sig_d_deberta_prob", 0.5))
+            s_a_score = float(d.get("sig_a_vocab_score", 0.0))
+            s_a_density = float(d.get("sig_a_vocab_density", 0.0))
+            s_b_score = float(d.get("sig_b_narrative_variance_score", 0.5))
+            s_c_len_var = float(d.get("sig_c_length_variance", 20.0))
+            s_c_ttr = float(d.get("sig_c_ttr", 0.7))
+            s_c_readability = float(d.get("sig_c_readability", 60.0))
+            s_c_score = float(d.get("sig_c_heuristic_score", 0.5))
+            s_d_prob = float(d.get("sig_d_deberta_prob", 0.5))
             sentence_index = d.get("sentence_index", 0)
-            text = d.get("text", "")
+            text = d.get("sentence", d.get("text", ""))
             vocab_matches = d.get("sig_a_vocab_matches", [])
             ttr = d.get("sig_c_ttr", 0.7)
             passive = d.get("sig_c_passive_voice", False)
             trans_count = d.get("sig_c_transition_count", 0)
         else:
-            sig_a_score = float(sig_data_or_a_score)
-            sentence_index = 0
-            text = ""
-            vocab_matches = []
-            ttr = sig_c_ttr
-            passive = False
-            trans_count = 0
+            if sig_a_score is not None:
+                s_a_score = float(sig_a_score)
+            elif sig_data_or_a_score is not None:
+                s_a_score = float(sig_data_or_a_score)
+            else:
+                s_a_score = 0.0
+                
+            s_a_density = float(sig_a_density)
+            s_b_score = float(sig_b_score)
+            s_c_len_var = float(sig_c_len_var)
+            s_c_ttr = float(sig_c_ttr)
+            s_c_readability = float(sig_c_readability)
+            s_c_score = float(sig_c_score)
+            s_d_prob = float(sig_d_prob)
+            sentence_index = kwargs.get("sentence_index", 0)
+            text = kwargs.get("sentence", kwargs.get("text", ""))
+            vocab_matches = kwargs.get("vocab_matches", [])
+            ttr = s_c_ttr
+            passive = kwargs.get("passive_voice", False)
+            trans_count = kwargs.get("transition_count", 0)
 
         feats = np.array([
-            sig_a_score,
-            sig_a_density,
-            sig_b_score,
-            sig_c_len_var / 100.0,
-            sig_c_ttr,
-            sig_c_readability / 100.0,
-            sig_c_score,
-            sig_d_prob
+            s_a_score,
+            s_a_density,
+            s_b_score,
+            s_c_len_var / 100.0,
+            s_c_ttr,
+            s_c_readability / 100.0,
+            s_c_score,
+            s_d_prob
         ])
         
         if self.model is not None:
@@ -121,10 +136,10 @@ class SignalCombiner:
             
         # Compute contribution breakdown
         contributions = {
-            "vocabulary_weight": round(float(sig_a_score * 0.25), 4),
-            "narrative_weight": round(float(sig_b_score * 0.20), 4),
-            "stylometry_weight": round(float(sig_c_score * 0.15), 4),
-            "classifier_weight": round(float(sig_d_prob * 0.40), 4)
+            "vocabulary_weight": round(float(s_a_score * 0.25), 4),
+            "narrative_weight": round(float(s_b_score * 0.20), 4),
+            "stylometry_weight": round(float(s_c_score * 0.15), 4),
+            "classifier_weight": round(float(s_d_prob * 0.40), 4)
         }
         
         # Format vocabulary matches for frontend WhyInspector
@@ -160,21 +175,21 @@ class SignalCombiner:
                     "matched_count": len(vocab_matches),
                     "matches": formatted_matches,
                     "matched_phrases": vocab_matches,
-                    "score": sig_a_score
+                    "score": s_a_score
                 },
                 "signal_a_vocabulary": {
                     "matched_count": len(vocab_matches),
                     "matches": formatted_matches,
                     "matched_phrases": vocab_matches,
-                    "score": sig_a_score
+                    "score": s_a_score
                 },
                 "signal_b": {
-                    "score": sig_b_score,
-                    "narrative_variance_score": sig_b_score
+                    "score": s_b_score,
+                    "narrative_variance_score": s_b_score
                 },
                 "signal_b_narrative": {
-                    "score": sig_b_score,
-                    "narrative_variance_score": sig_b_score
+                    "score": s_b_score,
+                    "narrative_variance_score": s_b_score
                 },
                 "signal_c": {
                     "word_count": num_words,
@@ -183,7 +198,7 @@ class SignalCombiner:
                     "has_passive_voice": passive,
                     "passive_voice": passive,
                     "transition_count": trans_count,
-                    "score": sig_c_score
+                    "score": s_c_score
                 },
                 "signal_c_stylometry": {
                     "word_count": num_words,
@@ -192,17 +207,17 @@ class SignalCombiner:
                     "has_passive_voice": passive,
                     "passive_voice": passive,
                     "transition_count": trans_count,
-                    "score": sig_c_score
+                    "score": s_c_score
                 },
                 "signal_d": {
-                    "ai_prob": sig_d_prob,
-                    "ai_probability": sig_d_prob,
-                    "prob": sig_d_prob
+                    "ai_prob": s_d_prob,
+                    "ai_probability": s_d_prob,
+                    "prob": s_d_prob
                 },
                 "signal_d_classifier": {
-                    "ai_prob": sig_d_prob,
-                    "ai_probability": sig_d_prob,
-                    "prob": sig_d_prob
+                    "ai_prob": s_d_prob,
+                    "ai_probability": s_d_prob,
+                    "prob": s_d_prob
                 }
             }
         }
