@@ -320,7 +320,10 @@ def explain_sentence(req: ExplainRequest):
         sentence_data=req.sentence_data,
         essay_context=req.essay_context
     )
-    return explanation
+    return {
+        "status": "success",
+        "explanation": explanation
+    }
 
 @app.get("/api/eval-metrics")
 def get_evaluation_metrics():

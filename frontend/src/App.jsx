@@ -63,11 +63,14 @@ export default function App() {
       }
 
       const data = await response.json();
+      data.raw_text = text;
       setAnalysisResult(data);
 
       if (data.all_sentences && data.all_sentences.length > 0) {
         const firstFlagged = data.all_sentences.find(s => s.band === 'high_ai' || s.band === 'uncertain' || s.band === 'AI_SKEWED') || data.all_sentences[0];
         setSelectedSentence(firstFlagged);
+        // Auto-request plain English Groq narration for the first flagged sentence
+        handleExplainSentence(firstFlagged, text);
       }
     } catch (err) {
       console.error('Analysis error:', err);
@@ -77,8 +80,8 @@ export default function App() {
     }
   };
 
-  const handleExplainSentence = async (sentenceData) => {
-    if (!sentenceData || isExplaining) return;
+  const handleExplainSentence = async (sentenceData, textOverride) => {
+    if (!sentenceData) return;
     setIsExplaining(true);
     setCurrentExplanation(null);
 
@@ -88,7 +91,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sentence_data: sentenceData,
-          essay_context: analysisResult ? analysisResult.raw_text : ''
+          essay_context: textOverride || (analysisResult ? (analysisResult.raw_text || analysisResult.text) : '')
         })
       });
 
@@ -97,7 +100,8 @@ export default function App() {
       }
 
       const data = await response.json();
-      setCurrentExplanation(data.explanation || 'Explanation generated.');
+      const text = typeof data === 'string' ? data : (data.explanation || 'Explanation generated.');
+      setCurrentExplanation(text);
     } catch (err) {
       console.error('Explanation error:', err);
       setCurrentExplanation('Statistical signature telemetry: Multiple analytical signals triggered simultaneously.');
