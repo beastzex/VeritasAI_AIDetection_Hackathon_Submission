@@ -16,21 +16,19 @@ export default function WhyInspector({ selectedSentence, essayContext, onExplain
     );
   }
 
-  const {
-    sentence = '',
-    band = '',
-    band_label = '',
-    ai_probability = 0,
-    signals = {}
-  } = selectedSentence;
+  const sentence = selectedSentence.sentence || selectedSentence.text || '';
+  const band = selectedSentence.band || '';
+  const band_label = selectedSentence.band_label || '';
+  const ai_probability = selectedSentence.ai_probability || 0;
+  const signals = selectedSentence.signals || {};
 
-  const signal_a_vocab = signals.signal_a_vocabulary || selectedSentence.signal_a_vocab || {};
-  const signal_b_narrative = signals.signal_b_narrative || selectedSentence.signal_b_narrative || {};
-  const signal_c_stylometry = signals.signal_c_stylometry || selectedSentence.signal_c_stylometry || {};
-  const signal_d_classifier = signals.signal_d_classifier || selectedSentence.signal_d_classifier || {};
+  const signal_a_vocab = signals.signal_a_vocabulary || signals.signal_a || selectedSentence.signal_a_vocab || {};
+  const signal_b_narrative = signals.signal_b_narrative || signals.signal_b || selectedSentence.signal_b_narrative || {};
+  const signal_c_stylometry = signals.signal_c_stylometry || signals.signal_c || selectedSentence.signal_c_stylometry || {};
+  const signal_d_classifier = signals.signal_d_classifier || signals.signal_d || selectedSentence.signal_d_classifier || {};
 
-  const matchedCount = signal_a_vocab?.matched_count ?? signal_a_vocab?.matches?.length ?? 0;
-  const matches = signal_a_vocab?.matches || [];
+  const matchedCount = signal_a_vocab?.matched_count ?? signal_a_vocab?.matches?.length ?? signal_a_vocab?.matched_phrases?.length ?? 0;
+  const matches = signal_a_vocab?.matches || signal_a_vocab?.matched_phrases || [];
 
   return (
     <div className="tg-card p-6 sm:p-8 space-y-6 bg-gradient-to-b from-[#ffffff] to-[#fafafa] dark:from-[#111113] dark:to-[#08080a] border border-[#ebebeb] dark:border-[#27272a]">

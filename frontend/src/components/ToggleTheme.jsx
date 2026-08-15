@@ -6,6 +6,8 @@ export default function ToggleTheme({
   className = '',
   duration = 450,
   animationType = 'swipe-down',
+  theme,
+  setTheme,
   ...props
 }) {
   const [isDark, setIsDark] = useState(false);

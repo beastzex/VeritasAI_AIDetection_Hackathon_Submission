@@ -78,7 +78,8 @@ export default function HeatmapViewer({ analysisResult, selectedSentence, onSele
 
               <div className="leading-loose">
                 {p.sentences.map((s, sIdx) => {
-                  const isSelected = selectedSentence && selectedSentence.sentence === s.sentence;
+                  const sentText = s.sentence || s.text || '';
+                  const isSelected = selectedSentence && (selectedSentence.sentence === sentText || selectedSentence.text === sentText);
                   const bandCls = getBandClass(s.band);
 
                   return (
@@ -90,7 +91,7 @@ export default function HeatmapViewer({ analysisResult, selectedSentence, onSele
                       }`}
                       title={`Sentence AI Risk: ${(s.ai_probability * 100).toFixed(1)}%`}
                     >
-                      {s.sentence}{' '}
+                      {sentText}{' '}
                     </span>
                   );
                 })}
@@ -100,7 +101,8 @@ export default function HeatmapViewer({ analysisResult, selectedSentence, onSele
         ) : (
           <div className="leading-loose">
             {all_sentences.map((s, idx) => {
-              const isSelected = selectedSentence && selectedSentence.sentence === s.sentence;
+              const sentText = s.sentence || s.text || '';
+              const isSelected = selectedSentence && (selectedSentence.sentence === sentText || selectedSentence.text === sentText);
               const bandCls = getBandClass(s.band);
 
               return (
@@ -112,7 +114,7 @@ export default function HeatmapViewer({ analysisResult, selectedSentence, onSele
                   }`}
                   title={`Sentence AI Risk: ${(s.ai_probability * 100).toFixed(1)}%`}
                 >
-                  {s.sentence}{' '}
+                  {sentText}{' '}
                 </span>
               );
             })}

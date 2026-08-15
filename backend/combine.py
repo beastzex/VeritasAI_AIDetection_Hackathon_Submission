@@ -1,4 +1,5 @@
 import os
+import re
 import joblib
 import numpy as np
 from typing import List, Dict, Any, Union
@@ -126,9 +127,30 @@ class SignalCombiner:
             "classifier_weight": round(float(sig_d_prob * 0.40), 4)
         }
         
+        # Format vocabulary matches for frontend WhyInspector
+        formatted_matches = []
+        for m in vocab_matches:
+            if isinstance(m, dict):
+                formatted_matches.append({
+                    "ngram": m.get("phrase", m.get("ngram", "")),
+                    "phrase": m.get("phrase", m.get("ngram", "")),
+                    "z_score": m.get("z_score", 1.0),
+                    "log_odds": m.get("log_odds", 1.0)
+                })
+            else:
+                formatted_matches.append({
+                    "ngram": str(m),
+                    "phrase": str(m),
+                    "z_score": 2.5,
+                    "log_odds": 2.0
+                })
+                
+        num_words = len(re.findall(r"\b\w+\b", text)) if text else 10
+        
         return {
             "sentence_index": sentence_index,
-            "text": text,
+            "sentence": text,  # Key for frontend HeatmapViewer & WhyInspector
+            "text": text,      # Backward compatibility
             "ai_probability": ai_prob,
             "band": band,
             "band_label": band_label,
@@ -136,19 +158,50 @@ class SignalCombiner:
             "signals": {
                 "signal_a": {
                     "matched_count": len(vocab_matches),
+                    "matches": formatted_matches,
+                    "matched_phrases": vocab_matches,
+                    "score": sig_a_score
+                },
+                "signal_a_vocabulary": {
+                    "matched_count": len(vocab_matches),
+                    "matches": formatted_matches,
                     "matched_phrases": vocab_matches,
                     "score": sig_a_score
                 },
                 "signal_b": {
+                    "score": sig_b_score,
+                    "narrative_variance_score": sig_b_score
+                },
+                "signal_b_narrative": {
+                    "score": sig_b_score,
                     "narrative_variance_score": sig_b_score
                 },
                 "signal_c": {
+                    "word_count": num_words,
                     "ttr": ttr,
+                    "type_token_ratio": ttr,
+                    "has_passive_voice": passive,
+                    "passive_voice": passive,
+                    "transition_count": trans_count,
+                    "score": sig_c_score
+                },
+                "signal_c_stylometry": {
+                    "word_count": num_words,
+                    "ttr": ttr,
+                    "type_token_ratio": ttr,
+                    "has_passive_voice": passive,
                     "passive_voice": passive,
                     "transition_count": trans_count,
                     "score": sig_c_score
                 },
                 "signal_d": {
+                    "ai_prob": sig_d_prob,
+                    "ai_probability": sig_d_prob,
+                    "prob": sig_d_prob
+                },
+                "signal_d_classifier": {
+                    "ai_prob": sig_d_prob,
+                    "ai_probability": sig_d_prob,
                     "prob": sig_d_prob
                 }
             }
