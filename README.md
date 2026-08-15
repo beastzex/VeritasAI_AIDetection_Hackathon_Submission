@@ -15,10 +15,44 @@ pinned: false
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.6.0%2Bcu124-EE4C2C.svg?logo=pytorch)](https://pytorch.org)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4.17-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker)](https://docker.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **Veritas AI** is an end-to-end, multi-signal AI admissions essay detection engine engineered for extreme scientific transparency, sentence-level interpretability, and bias-aware fairness. It strictly adheres to the **Non-LLM Verdict Rule**: no chat completion model is ever allowed to issue or vote on authenticity verdicts.
 
-**Deployed Link** : https://veritas-ai-brown.vercel.app/
+* **🌐 Live Deployed Application**: [https://veritas-ai-brown.vercel.app/](https://veritas-ai-brown.vercel.app/)
+* **📄 Executive Technical Overview (2-Page PDF)**: [Veritas_AI_Technical_Overview.pdf](./Veritas_AI_Technical_Overview.pdf)
+* **🎬 2-Minute Video Demo Script**: [VIDEO_SCRIPT.md](./VIDEO_SCRIPT.md)
+
+---
+
+## 🎥 Video Walkthrough & Interactive UI Showcase
+
+### 📹 Video Demo
+* **Full Walkthrough Video**: [`videos_and_images/20260815-1657-03.4420826.mp4`](./videos_and_images/20260815-1657-03.4420826.mp4)
+
+---
+
+### 📸 Product Gallery
+
+| 1. High-Contrast Forensic Hero & Studio | 2. Sample Presets & Essay Input |
+|:---:|:---:|
+| ![Hero Section](./videos_and_images/Screenshot%202026-08-15%20223049.png) | ![Essay Input Workbench](./videos_and_images/Screenshot%202026-08-15%20223105.png) |
+| *Hero banner with live status telemetry* | *Multi-preset evaluation studio* |
+
+| 3. Interactive Sentence-Level Heatmap DAW | 4. Sentence Inspection & Telemetry Drawer |
+|:---:|:---:|
+| ![Heatmap DAW](./videos_and_images/Screenshot%202026-08-15%20223111.png) | ![Evidence Inspector](./videos_and_images/Screenshot%202026-08-15%20223127.png) |
+| *Color-coded sentence authenticity breakdown across paragraphs* | *Exact n-gram Z-scores, cosine velocity, and DeBERTa confidence* |
+
+| 5. Multi-Signal 4-Extractor Architecture | 6. Full Mathematical Telemetry & Terminal |
+|:---:|:---:|
+| ![Architecture Window](./videos_and_images/Screenshot%202026-08-15%20223141.png) | ![Interactive Terminal](./videos_and_images/Screenshot%202026-08-15%20223149.png) |
+| *Orthogonal feature extraction pipelines* | *Deterministic weights and decision boundary parameters* |
+
+| 7. Held-Out Test Split & Metrics Audit | 8. ESL Fairness & Non-Native Protection |
+|:---:|:---:|
+| ![Held-Out Test Metrics](./videos_and_images/Screenshot%202026-08-15%20223220.png) | ![ESL Fairness Benchmark](./videos_and_images/Screenshot%202026-08-15%20223224.png) |
+| *98.4% Accuracy, 0.9995 ROC-AUC, 0.0133 Brier Loss* | *96.7% Specificity on non-native English learner benchmark* |
 
 ---
 
@@ -32,7 +66,7 @@ graph TD
         B --> S1["Signal A: Vocabulary Signature<br/>(Dirichlet Prior Log-Odds Z ≥ 3.0)"]
         B --> S2["Signal B: Narrative Trajectory Variance<br/>(MiniLM-L6-v2 Cosine Sequence)"]
         B --> S3["Signal C: Stylometrics & Readability<br/>(spaCy POS, TTR, Length Burstiness)"]
-        B --> S4["Signal D: Supervised Sentence Attention<br/>(Fine-Tuned RoBERTa/DeBERTa Classifier)"]
+        B --> S4["Signal D: Supervised Sentence Attention<br/>(Fine-Tuned DeBERTa-v3 Classifier)"]
     end
     
     S1 --> C["Regularized Logistic Regression Combiner<br/>(Calibrated Probabilities & Contributions)"]
@@ -110,7 +144,7 @@ $$\begin{bmatrix} \text{True Human: } 149 & \text{False Positives: } 3 \\ \text{
 
 ### ESL (English as a Second Language) Fairness Finding
 * **The Problem**: Standard commercial detectors penalize international applicants who write with structured transitional phrases (*"In conclusion"*, *"Moreover"*).
-* **The Veritas Solution**: By incorporating **Signal B (Narrative Trajectory Variance)** and **Signal C (Length Burstiness, $\beta = -0.4817$)**, Veritas validates genuine storytelling flow, dropping false accusations to 3.3% on realistic essays.
+* **The Veritas Solution**: By incorporating **Signal B (Narrative Trajectory Variance)** and **Signal C (Length Burstiness, $\beta = -0.4817$)**, Veritas validates genuine storytelling flow, achieving **96.7% Specificity (3.3% False Positive Rate)** on non-native benchmark essays.
 
 ---
 
@@ -130,8 +164,8 @@ In accordance with strict ethical standards:
 ### 1. Environment Setup
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_USERNAME/veritas-ai.git
-cd veritas-ai
+git clone https://github.com/beastzex/VeritasAI_AIDetection_Hackathon_Submission.git
+cd VeritasAI_AIDetection_Hackathon_Submission
 
 # Copy environment template
 cp .env.example .env
@@ -174,7 +208,6 @@ docker run -p 7860:7860 -e GROQ_API_KEY="your_api_key_here" veritas-ai-backend
 ```bash
 cd frontend
 npm run build
-# Deploy 'dist/' folder to Vercel with rewrites pointing to Hugging Face backend
 ```
 
 ---
