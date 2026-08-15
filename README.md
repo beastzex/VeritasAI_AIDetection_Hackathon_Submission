@@ -54,7 +54,7 @@ Sentences are parsed across paragraphs and color-coded across three calibrated r
 
 Clicking any highlighted sentence opens the right-hand **Evidence Inspector**, providing raw mathematical telemetry alongside instant **Groq-accelerated LLaMA 3.3 70B** post-hoc translation:
 
-| Evidence Inspector & Groq Translation | Forensic Signal Radar & Telemetry |
+
 |:---:|:---:|
 | ![Sentence Evidence Inspector](videos_and_images/04_evidence_inspector.png) | ![Signal Radar](videos_and_images/05_signal_radar.png) |
 
@@ -84,7 +84,7 @@ graph TD
     G --> UI["Evidence Inspector & Telemetry Drawer"]
 ```
 
-| Architecture Overview Window | Interactive Terminal & Learned Weights |
+
 |:---:|:---:|
 | ![Architecture Overview](videos_and_images/06_architecture.png) | ![Mac Terminal](videos_and_images/07_mac_terminal.png) |
 
@@ -138,7 +138,6 @@ The four analytical signals are synthesized by a regularized `sklearn.linear_mod
 
 ## 📊 Held-out Test Evaluation & ESL Fairness Audit
 
-| Held-Out Verification Metrics | ESL Non-Native Applicant Protection |
 |:---:|:---:|
 | ![Held-Out Test Metrics](videos_and_images/08_held_out_metrics.png) | ![ESL Fairness Benchmark](videos_and_images/09_esl_fairness.png) |
 
