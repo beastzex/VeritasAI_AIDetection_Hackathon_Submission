@@ -17,46 +17,46 @@ pinned: false
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker)](https://docker.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Veritas AI** is an end-to-end, multi-signal AI admissions essay detection engine engineered for extreme scientific transparency, sentence-level interpretability, and bias-aware fairness. It strictly adheres to the **Non-LLM Verdict Rule**: no chat completion model is ever allowed to issue or vote on authenticity verdicts.
+> **Veritas AI** is an end-to-end, multi-signal AI admissions essay detection engine engineered for scientific transparency, sentence-level interpretability, and bias-aware fairness. It strictly adheres to the **Non-LLM Verdict Rule**: no chat completion model is ever allowed to issue or vote on authenticity verdicts.
 
 * **🌐 Live Deployed Application**: [https://veritas-ai-brown.vercel.app/](https://veritas-ai-brown.vercel.app/)
 * **📄 Executive Technical Overview (2-Page PDF)**: [Veritas_AI_Technical_Overview.pdf](./Veritas_AI_Technical_Overview.pdf)
-* **🎬 2-Minute Video Demo Script**: [VIDEO_SCRIPT.md](./VIDEO_SCRIPT.md)
+* **🎬 Video Demo Script**: [VIDEO_SCRIPT.md](./VIDEO_SCRIPT.md)
+* **🎥 Full Walkthrough Video**: [`videos_and_images/20260815-1657-03.4420826.mp4`](./videos_and_images/20260815-1657-03.4420826.mp4)
 
 ---
 
-## 🎥 Video Walkthrough & Interactive UI Showcase
+## 📸 Product Overview & Interface
 
-### 📹 Video Demo
-* **Full Walkthrough Video**: [`videos_and_images/20260815-1657-03.4420826.mp4`](./videos_and_images/20260815-1657-03.4420826.mp4)
-
----
-
-### 📸 Product Gallery
-
-| 1. High-Contrast Forensic Hero & Studio | 2. Sample Presets & Essay Input |
-|:---:|:---:|
-| ![Hero Section](./videos_and_images/Screenshot%202026-08-15%20223049.png) | ![Essay Input Workbench](./videos_and_images/Screenshot%202026-08-15%20223105.png) |
-| *Hero banner with live status telemetry* | *Multi-preset evaluation studio* |
-
-| 3. Interactive Sentence-Level Heatmap DAW | 4. Sentence Inspection & Telemetry Drawer |
-|:---:|:---:|
-| ![Heatmap DAW](./videos_and_images/Screenshot%202026-08-15%20223111.png) | ![Evidence Inspector](./videos_and_images/Screenshot%202026-08-15%20223127.png) |
-| *Color-coded sentence authenticity breakdown across paragraphs* | *Exact n-gram Z-scores, cosine velocity, and DeBERTa confidence* |
-
-| 5. Multi-Signal 4-Extractor Architecture | 6. Full Mathematical Telemetry & Terminal |
-|:---:|:---:|
-| ![Architecture Window](./videos_and_images/Screenshot%202026-08-15%20223141.png) | ![Interactive Terminal](./videos_and_images/Screenshot%202026-08-15%20223149.png) |
-| *Orthogonal feature extraction pipelines* | *Deterministic weights and decision boundary parameters* |
-
-| 7. Held-Out Test Split & Metrics Audit | 8. ESL Fairness & Non-Native Protection |
-|:---:|:---:|
-| ![Held-Out Test Metrics](./videos_and_images/Screenshot%202026-08-15%20223220.png) | ![ESL Fairness Benchmark](./videos_and_images/Screenshot%202026-08-15%20223224.png) |
-| *98.4% Accuracy, 0.9995 ROC-AUC, 0.0133 Brier Loss* | *96.7% Specificity on non-native English learner benchmark* |
+![Veritas AI Hero Banner](./videos_and_images/Screenshot%202026-08-15%20223049.png)
 
 ---
 
-## 🏛 Architecture Overview
+## ⚡ Interactive Inference Studio
+
+Admissions officers can paste personal statements directly or evaluate against pre-calibrated benchmark presets:
+
+![Inference Studio Workbench](./videos_and_images/Screenshot%202026-08-15%20223105.png)
+
+### 🎹 Sentence-Level Authenticity Heatmap DAW
+Sentences are parsed across paragraphs and color-coded across three calibrated risk bands: **Red for High AI (&ge;70%)**, **Gray for Mixed Uncertainty (40–70%)**, and **Teal for Human Authenticity (&lt;40%)**:
+
+![Sentence Heatmap DAW](./videos_and_images/Screenshot%202026-08-15%20223111.png)
+
+---
+
+## 🔍 Sentence Evidence Inspector & Groq Narration
+
+Clicking any highlighted sentence opens the right-hand **Evidence Inspector**, providing raw mathematical telemetry alongside instant **Groq-accelerated LLaMA 3.3 70B** post-hoc translation:
+
+| Evidence Inspector & Groq Translation | Forensic Signal Radar & Telemetry |
+|:---:|:---:|
+| ![Sentence Evidence Inspector](./videos_and_images/Screenshot%202026-08-15%20223127.png) | ![Signal Radar](./videos_and_images/Screenshot%202026-08-15%20223204.png) |
+| *Exact n-gram Z-scores, cosine velocity, and plain-English translation* | *Multi-dimensional signal contribution radar* |
+
+---
+
+## 🏛 Architecture & 4 Parallel Feature Extractors
 
 ```mermaid
 graph TD
@@ -79,12 +79,17 @@ graph TD
     G --> UI["Evidence Inspector & Telemetry Drawer"]
 ```
 
+| Architecture Overview Window | Interactive Terminal & Learned Weights |
+|:---:|:---:|
+| ![Architecture Overview](./videos_and_images/Screenshot%202026-08-15%20223141.png) | ![Mac Terminal](./videos_and_images/Screenshot%202026-08-15%20223149.png) |
+| *Orthogonal feature extraction pipelines* | *Deterministic weights and decision boundary parameters* |
+
 ---
 
 ## 🔬 The Four Analytical Signals
 
 ### 1. Signal A — Vocabulary Signature (Dirichlet Prior Log-Odds)
-AI language models converge on a statistically narrow, repetitive vocabulary cluster (e.g., *"multifaceted"*, *"transformative journey"*, *"testament to"*, *"pivotal role"*).
+AI language models converge on a statistically narrow vocabulary cluster (e.g., *"multifaceted"*, *"transformative journey"*, *"testament to"*, *"pivotal role"*).
 We compute the **Monroe, Colaresi, and Quinn (2008)** log-odds ratio with an informative Dirichlet prior over the 27.5M-token corpus:
 $$\hat{\delta}_w^{(AI - Human)} = \log\left(\frac{y_w^{AI} + \alpha_w}{n^{AI} + \alpha_0 - y_w^{AI} - \alpha_w}\right) - \log\left(\frac{y_w^{Human} + \alpha_w}{n^{Human} + \alpha_0 - y_w^{Human} - \alpha_w}\right)$$
 $$\sigma^2(\hat{\delta}_w) \approx \frac{1}{y_w^{AI} + \alpha_w} + \frac{1}{y_w^{Human} + \alpha_w}$$
@@ -126,7 +131,11 @@ The four analytical signals are synthesized by a regularized `sklearn.linear_mod
 
 ---
 
-## 📊 Held-out Test Evaluation & Benchmark Audit
+## 📊 Held-out Test Evaluation & ESL Fairness Audit
+
+| Held-Out Verification Metrics | ESL Non-Native Applicant Protection |
+|:---:|:---:|
+| ![Held-Out Test Metrics](./videos_and_images/Screenshot%202026-08-15%20223220.png) | ![ESL Fairness Benchmark](./videos_and_images/Screenshot%202026-08-15%20223224.png) |
 
 Evaluated on held-out test split ($N = 4,496$ essays):
 
@@ -144,7 +153,7 @@ $$\begin{bmatrix} \text{True Human: } 149 & \text{False Positives: } 3 \\ \text{
 
 ### ESL (English as a Second Language) Fairness Finding
 * **The Problem**: Standard commercial detectors penalize international applicants who write with structured transitional phrases (*"In conclusion"*, *"Moreover"*).
-* **The Veritas Solution**: By incorporating **Signal B (Narrative Trajectory Variance)** and **Signal C (Length Burstiness, $\beta = -0.4817$)**, Veritas validates genuine storytelling flow, achieving **96.7% Specificity (3.3% False Positive Rate)** on non-native benchmark essays.
+* **The Veritas Solution**: By incorporating **Signal B (Narrative Trajectory Variance)** and **Signal C (Length Burstiness, $\beta = -0.4817$)**, Veritas rewards authentic storytelling flow, achieving **96.7% Specificity (3.3% False Positive Rate)** on non-native benchmark essays.
 
 ---
 
