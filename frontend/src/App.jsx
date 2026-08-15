@@ -16,9 +16,9 @@ import FAQSection from './components/FAQSection';
 import ClosingTealBand from './components/ClosingTealBand';
 import Footer from './components/Footer';
 
-// Call Render backend directly. Custom CORS middleware on Render ensures
-// Access-Control-Allow-Origin: * on ALL responses including errors.
-const API_BASE = 'https://veritasai-oxc7.onrender.com';
+// In dev mode: empty string → Vite proxy forwards /api/* to localhost:8000
+// In production: hardcoded Render URL for direct API calls with CORS
+const API_BASE = import.meta.env.DEV ? '' : 'https://veritasai-oxc7.onrender.com';
 
 export default function App() {
   const [theme, setTheme] = useState('dark');
