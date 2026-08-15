@@ -21,7 +21,6 @@ pinned: false
 
 * **🌐 Live Deployed Application**: [https://veritas-ai-brown.vercel.app/](https://veritas-ai-brown.vercel.app/)
 * **📄 Executive Technical Overview (2-Page PDF)**: [Veritas_AI_Technical_Overview.pdf](./Veritas_AI_Technical_Overview.pdf)
-* **🎬 Video Demo Script**: [VIDEO_SCRIPT.md](./VIDEO_SCRIPT.md)
 * **🎥 Full Walkthrough Video**: [`videos_and_images/20260815-1657-03.4420826.mp4`](./videos_and_images/20260815-1657-03.4420826.mp4)
 
 ---

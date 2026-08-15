@@ -11,10 +11,10 @@
 kaggle.json
 */kaggle.json
 **/kaggle.json
-*.pem
-*.key
-*.cert
 *.p12
+VIDEO_SCRIPT.md
+*video_script*
+videos_and_images/*.mp4
 
 # ==============================================================================
 # HEAVY MACHINE LEARNING WEIGHTS & CHECKPOINTS (EXCEED GITHUB LIMITS)
